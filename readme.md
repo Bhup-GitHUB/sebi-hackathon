@@ -256,5 +256,5 @@ npm run test:coverage
 
 
 
-## 👥 Team -> Yajat , Naman , Bhupesh , Simran , Akshat
+## 👥 Team -> Yajat(https://github.com/YajatPahuja) , Naman , Bhupesh , Simran , Akshat
 
