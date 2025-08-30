@@ -1,0 +1,8 @@
+name = "sebi-hackathon"
+main = "src/index.ts"
+compatibility_date = "2024-08-31"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "sebi-trading-db"
+database_id = ""
