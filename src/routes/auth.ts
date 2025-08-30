@@ -7,7 +7,7 @@ type Bindings = {
 
 const auth = new Hono<{ Bindings: Bindings }>()
 
-// Simple hash function for hackathon
+
 async function hashPassword(password: string): Promise<string> {
   const encoder = new TextEncoder()
   const data = encoder.encode(password)
@@ -16,7 +16,7 @@ async function hashPassword(password: string): Promise<string> {
   return hashArray.map(b => b.toString(16).padStart(2, '0')).join('')
 }
 
-// POST /auth/signup
+
 auth.post('/signup', async (c) => {
   try {
     const { username, email, phone, password, name } = await c.req.json()
@@ -29,10 +29,9 @@ auth.post('/signup', async (c) => {
       }, 400)
     }
     
-    // Hash password
+    
     const passwordHash = await hashPassword(password)
     
-    // Insert user
     const result = await c.env.sebi_trading_db.prepare(`
       INSERT INTO users (username, email, phone, password_hash, name)
       VALUES (?, ?, ?, ?, ?)
@@ -52,7 +51,7 @@ auth.post('/signup', async (c) => {
   }
 })
 
-// POST /auth/login  
+ 
 auth.post('/login', async (c) => {
   try {
     const { username, password } = await c.req.json()
@@ -64,7 +63,7 @@ auth.post('/login', async (c) => {
       }, 400)
     }
     
-    // Find user
+    
     const result = await c.env.sebi_trading_db.prepare(`
       SELECT * FROM users WHERE username = ?
     `).bind(username).first()
@@ -76,7 +75,7 @@ auth.post('/login', async (c) => {
       }, 401)
     }
     
-    // Hash provided password and compare
+    
     const providedPasswordHash = await hashPassword(password)
     if (providedPasswordHash !== result.password_hash) {
       return c.json({ 
@@ -85,7 +84,7 @@ auth.post('/login', async (c) => {
       }, 401)
     }
     
-    // Create JWT payload
+   
     const payload = {
         //@ts-ignore
       sub: result.id.toString(),

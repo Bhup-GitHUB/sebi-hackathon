@@ -7,7 +7,7 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>()
 
-// Health check endpoint
+
 app.get('/', (c) => {
   return c.json({ 
     message: 'SEBI Hackathon Trading Platform API',
@@ -24,7 +24,7 @@ app.get('/', (c) => {
   })
 })
 
-// Debug endpoint to check DB binding
+
 app.get('/debug', async (c) => {
   return c.json({
     hasDB: !!c.env.sebi_trading_db,
@@ -34,7 +34,7 @@ app.get('/debug', async (c) => {
   })
 })
 
-// Test database connection endpoint
+
 app.get('/test-db', async (c) => {
   try {
     const result = await c.env.sebi_trading_db.prepare('SELECT * FROM users LIMIT 5').all()
@@ -52,10 +52,10 @@ app.get('/test-db', async (c) => {
   }
 })
 
-// Mount authentication routes
+
 app.route('/auth', auth)
 
-// 404 handler for undefined routes
+
 app.notFound((c) => {
   return c.json({
     success: false,
@@ -69,7 +69,7 @@ app.notFound((c) => {
   }, 404)
 })
 
-// Global error handler
+
 app.onError((err, c) => {
   console.error('Global error:', err)
   return c.json({
