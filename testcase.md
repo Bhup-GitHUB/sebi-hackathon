@@ -299,7 +299,8 @@ curl -X POST https://sebi-hackathon.bkumar-be23.workers.dev/kyc/register \
   "message": "KYC registration successful",
   "kycId": 1,
   "pan": "ABCDE1234F",
-  "status": "pending"
+  "status": "pending",
+  "kycExists": false
 }
 ```
 
@@ -377,7 +378,15 @@ curl -X POST https://sebi-hackathon.bkumar-be23.workers.dev/kyc/register \
 ```json
 {
   "success": false,
-  "error": "KYC already registered for this user"
+  "error": "KYC already registered for this user",
+  "existingKyc": {
+    "id": 1,
+    "pan": "ABCDE1234F",
+    "status": "pending",
+    "createdAt": "2025-08-30T20:10:18.304Z",
+    "validatedAt": null
+  },
+  "kycExists": true
 }
 ```
 
@@ -513,7 +522,8 @@ curl -X GET https://sebi-hackathon.bkumar-be23.workers.dev/kyc/status \
     "status": "validated",
     "createdAt": "2025-08-30T20:10:18.304Z",
     "validatedAt": "2025-08-30T20:15:30.123Z"
-  }
+  },
+  "kycExists": true
 }
 ```
 
@@ -522,7 +532,8 @@ curl -X GET https://sebi-hackathon.bkumar-be23.workers.dev/kyc/status \
 {
   "success": true,
   "message": "No KYC record found",
-  "kycStatus": "not_registered"
+  "kycStatus": "not_registered",
+  "kycExists": false
 }
 ```
 

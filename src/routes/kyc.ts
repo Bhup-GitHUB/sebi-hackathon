@@ -7,7 +7,7 @@ type Bindings = {
 
 const kyc = new Hono<{ Bindings: Bindings }>()
 
-// Middleware to verify JWT token
+
 async function verifyToken(c: any) {
   const authHeader = c.req.header('Authorization')
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -30,10 +30,19 @@ async function verifyToken(c: any) {
   }
 }
 
-// KYC Registration endpoint
+// Helper function to check if KYC exists for a user
+async function checkKycExists(db: D1Database, userId: string) {
+  const existingKyc = await db.prepare(`
+    SELECT id, pan, status, created_at, validated_at 
+    FROM kyc WHERE user_id = ?
+  `).bind(userId).first()
+  
+  return existingKyc
+}
+
 kyc.post('/register', async (c) => {
   try {
-    // Verify JWT token
+    
     const tokenResult = await verifyToken(c)
     if (tokenResult && 'error' in tokenResult) {
       return tokenResult
@@ -42,7 +51,7 @@ kyc.post('/register', async (c) => {
     const userId = tokenResult.sub
     const { pan } = await c.req.json()
     
-    // Validate PAN format (10 characters, alphanumeric)
+    
     if (!pan || typeof pan !== 'string') {
       return c.json({
         success: false,
@@ -50,7 +59,7 @@ kyc.post('/register', async (c) => {
       }, 400)
     }
     
-    // PAN format validation (10 characters, alphanumeric)
+    
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/
     if (!panRegex.test(pan.toUpperCase())) {
       return c.json({
@@ -59,19 +68,26 @@ kyc.post('/register', async (c) => {
       }, 400)
     }
     
+    
     // Check if KYC already exists for this user
-    const existingKyc = await c.env.sebi_trading_db.prepare(`
-      SELECT * FROM kyc WHERE user_id = ?
-    `).bind(userId).first()
+    const existingKyc = await checkKycExists(c.env.sebi_trading_db, userId)
     
     if (existingKyc) {
       return c.json({
         success: false,
-        error: 'KYC already registered for this user'
+        error: 'KYC already registered for this user',
+        existingKyc: {
+          id: existingKyc.id,
+          pan: existingKyc.pan,
+          status: existingKyc.status,
+          createdAt: existingKyc.created_at,
+          validatedAt: existingKyc.validated_at
+        },
+        kycExists: true
       }, 400)
     }
     
-    // Insert KYC record
+    
     const result = await c.env.sebi_trading_db.prepare(`
       INSERT INTO kyc (user_id, pan, status, created_at)
       VALUES (?, ?, ?, ?)
@@ -82,7 +98,8 @@ kyc.post('/register', async (c) => {
       message: 'KYC registration successful',
       kycId: result.meta.last_row_id,
       pan: pan.toUpperCase(),
-      status: 'pending'
+      status: 'pending',
+      kycExists: false
     })
     
   } catch (error) {
@@ -93,10 +110,10 @@ kyc.post('/register', async (c) => {
   }
 })
 
-// KYC Validation endpoint
+
 kyc.post('/validate', async (c) => {
   try {
-    // Verify JWT token
+   
     const tokenResult = await verifyToken(c)
     if (tokenResult && 'error' in tokenResult) {
       return tokenResult
@@ -112,7 +129,7 @@ kyc.post('/validate', async (c) => {
       }, 400)
     }
     
-    // Check if KYC exists and belongs to the user
+    
     const kycRecord = await c.env.sebi_trading_db.prepare(`
       SELECT * FROM kyc WHERE id = ? AND user_id = ?
     `).bind(kycId, userId).first()
@@ -131,12 +148,12 @@ kyc.post('/validate', async (c) => {
       }, 400)
     }
     
-    // Update KYC status to validated
+    
     await c.env.sebi_trading_db.prepare(`
       UPDATE kyc SET status = ?, validated_at = ? WHERE id = ?
     `).bind('validated', new Date().toISOString(), kycId).run()
     
-    // Update user's KYC status
+    
     await c.env.sebi_trading_db.prepare(`
       UPDATE users SET kyc_status = ? WHERE id = ?
     `).bind('validated', userId).run()
@@ -157,10 +174,10 @@ kyc.post('/validate', async (c) => {
   }
 })
 
-// Get KYC status endpoint
+
 kyc.get('/status', async (c) => {
   try {
-    // Verify JWT token
+  
     const tokenResult = await verifyToken(c)
     if (tokenResult && 'error' in tokenResult) {
       return tokenResult
@@ -168,7 +185,7 @@ kyc.get('/status', async (c) => {
     
     const userId = tokenResult.sub
     
-    // Get KYC status for the user
+    
     const kycRecord = await c.env.sebi_trading_db.prepare(`
       SELECT id, pan, status, created_at, validated_at 
       FROM kyc WHERE user_id = ?
@@ -178,7 +195,8 @@ kyc.get('/status', async (c) => {
       return c.json({
         success: true,
         message: 'No KYC record found',
-        kycStatus: 'not_registered'
+        kycStatus: 'not_registered',
+        kycExists: false
       })
     }
     
@@ -191,7 +209,8 @@ kyc.get('/status', async (c) => {
         status: kycRecord.status,
         createdAt: kycRecord.created_at,
         validatedAt: kycRecord.validated_at
-      }
+      },
+      kycExists: true
     })
     
   } catch (error) {

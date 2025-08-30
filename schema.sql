@@ -10,6 +10,7 @@ CREATE TABLE users (
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+
 CREATE TABLE kyc (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
@@ -19,6 +20,11 @@ CREATE TABLE kyc (
     validated_at DATETIME,
     FOREIGN KEY (user_id) REFERENCES users(id)
 );
+
+
+CREATE INDEX idx_kyc_user_id ON kyc(user_id);
+CREATE INDEX idx_kyc_pan ON kyc(pan);
+
 
 INSERT INTO users (username, email, phone, password_hash, name) VALUES 
 ('testuser', 'test@example.com', '+919876543210', 'hashedpassword123', 'Test User');
