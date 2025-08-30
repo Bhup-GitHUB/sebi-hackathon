@@ -205,7 +205,6 @@ Content-Type: application/json
 - **JWT Authentication** - Secure token-based auth
 - **Rate Limiting** - Prevent API abuse  
 - **Input Validation** - Sanitize all inputs
-- **CORS Protection** - Cross-origin security
 - **Fraud Detection** - ML-powered anomaly detection
 
 ## 📊 Fraud Detection System

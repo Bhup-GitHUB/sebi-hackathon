@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import auth from './routes/auth'
 
 type Bindings = {
   sebi_trading_db: D1Database
@@ -6,30 +7,76 @@ type Bindings = {
 
 const app = new Hono<{ Bindings: Bindings }>()
 
+// Health check endpoint
 app.get('/', (c) => {
   return c.json({ 
     message: 'SEBI Hackathon Trading Platform API',
     status: 'healthy',
-    timestamp: new Date().toISOString()
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    endpoints: {
+      auth: {
+        signup: 'POST /auth/signup',
+        login: 'POST /auth/login'
+      },
+      database: 'GET /test-db'
+    }
   })
 })
 
+// Debug endpoint to check DB binding
+app.get('/debug', async (c) => {
+  return c.json({
+    hasDB: !!c.env.sebi_trading_db,
+    dbType: typeof c.env.sebi_trading_db,
+    envKeys: Object.keys(c.env || {}),
+    bindingWorking: c.env.sebi_trading_db ? 'Yes' : 'No'
+  })
+})
+
+// Test database connection endpoint
 app.get('/test-db', async (c) => {
   try {
-    const result = await c.env.sebi_trading_db.prepare('SELECT * FROM users').all()
+    const result = await c.env.sebi_trading_db.prepare('SELECT * FROM users LIMIT 5').all()
     return c.json({
       success: true,
       message: 'Database connected successfully!',
+      totalUsers: result.results?.length || 0,
       users: result.results
     })
   } catch (error) {
-    // Properly type the error
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred'
     return c.json({
       success: false,
-      error: errorMessage
+      error: error instanceof Error ? error.message : 'Unknown database error'
     }, 500)
   }
+})
+
+// Mount authentication routes
+app.route('/auth', auth)
+
+// 404 handler for undefined routes
+app.notFound((c) => {
+  return c.json({
+    success: false,
+    error: 'Endpoint not found',
+    availableEndpoints: [
+      'GET /',
+      'GET /test-db',
+      'POST /auth/signup',
+      'POST /auth/login'
+    ]
+  }, 404)
+})
+
+// Global error handler
+app.onError((err, c) => {
+  console.error('Global error:', err)
+  return c.json({
+    success: false,
+    error: 'Internal server error',
+    message: err.message
+  }, 500)
 })
 
 export default app
