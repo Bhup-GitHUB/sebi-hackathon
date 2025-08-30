@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import auth from './routes/auth'
+import kyc from './routes/kyc'
 
 type Bindings = {
   sebi_trading_db: D1Database
@@ -18,6 +19,11 @@ app.get('/', (c) => {
       auth: {
         signup: 'POST /auth/signup',
         login: 'POST /auth/login'
+      },
+      kyc: {
+        register: 'POST /kyc/register',
+        validate: 'POST /kyc/validate',
+        status: 'GET /kyc/status'
       },
       database: 'GET /test-db'
     }
@@ -54,6 +60,7 @@ app.get('/test-db', async (c) => {
 
 
 app.route('/auth', auth)
+app.route('/kyc', kyc)
 
 
 app.notFound((c) => {
@@ -64,7 +71,10 @@ app.notFound((c) => {
       'GET /',
       'GET /test-db',
       'POST /auth/signup',
-      'POST /auth/login'
+      'POST /auth/login',
+      'POST /kyc/register',
+      'POST /kyc/validate',
+      'GET /kyc/status'
     ]
   }, 404)
 })

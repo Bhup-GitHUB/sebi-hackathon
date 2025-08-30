@@ -6,9 +6,19 @@ CREATE TABLE users (
     phone TEXT NOT NULL,
     password_hash TEXT NOT NULL,
     name TEXT NOT NULL,
+    kyc_status TEXT DEFAULT 'not_registered',
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE kyc (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    pan TEXT NOT NULL,
+    status TEXT DEFAULT 'pending',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    validated_at DATETIME,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
 
 INSERT INTO users (username, email, phone, password_hash, name) VALUES 
 ('testuser', 'test@example.com', '+919876543210', 'hashedpassword123', 'Test User');
