@@ -1,16 +1,447 @@
-# 🧪 SEBI Hackathon Trading Platform - API Test Cases
+# 🧪 SEBI Hackathon Trading Platform - Postman Test Collection
 
 > **Live API Base URL:** `https://sebi-hackathon.bkumar-be23.workers.dev/`
 
-A comprehensive testing guide for the SEBI Hackathon Trading Platform API. This document provides detailed test cases, request/response examples, and testing instructions for all available endpoints.
+A comprehensive Postman testing guide for the SEBI Hackathon Trading Platform API. This document provides Postman collection imports, environment setup, and detailed testing workflows.
 
 ## 📋 Table of Contents
 
+- [🚀 Quick Start (Postman)](#-quick-start-postman)
+- [📦 Postman Collection Import](#-postman-collection-import)
+- [⚙️ Environment Setup](#️-environment-setup)
 - [🔐 Authentication Endpoints](#-authentication-endpoints)
 - [📊 Database Testing](#-database-testing)
 - [🌐 Health Check](#-health-check)
-- [🛠️ Testing Tools](#️-testing-tools)
+- [🔄 Test Automation](#-test-automation)
 - [📝 Test Scenarios](#-test-scenarios)
+
+---
+
+## 🚀 Quick Start (Postman)
+
+### Step 1: Import Collection
+1. Open **Postman**
+2. Click **Import** button
+3. Copy the JSON collection below and paste it
+4. Click **Import**
+
+### Step 2: Set Up Environment
+1. Create new environment: **SEBI Hackathon**
+2. Add variables:
+   - `base_url`: `https://sebi-hackathon.bkumar-be23.workers.dev`
+   - `auth_token`: (leave empty, will be auto-filled)
+   - `user_id`: (leave empty, will be auto-filled)
+
+### Step 3: Run Tests
+1. Select the **SEBI Hackathon** environment
+2. Open the collection
+3. Click **Run Collection** to execute all tests
+
+---
+
+## 📦 Postman Collection Import
+
+Copy and paste this JSON into Postman's import section:
+
+```json
+{
+  "info": {
+    "name": "SEBI Hackathon Trading Platform API",
+    "description": "Complete API testing collection for SEBI Hackathon Trading Platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://sebi-hackathon.bkumar-be23.workers.dev",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "🌐 Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/",
+          "host": ["{{base_url}}"],
+          "path": [""]
+        },
+        "description": "Check if the API is running and healthy"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"API is healthy\", function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.status).to.eql(\"healthy\");",
+              "});",
+              "",
+              "pm.test(\"Version is present\", function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.version).to.be.a('string');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Database Test",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/test-db",
+          "host": ["{{base_url}}"],
+          "path": ["test-db"]
+        },
+        "description": "Test database connectivity and retrieve user data"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Database connection successful\", function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.success).to.be.true;",
+              "    pm.expect(response.message).to.include(\"connected successfully\");",
+              "});",
+              "",
+              "pm.test(\"Users array exists\", function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.users).to.be.an('array');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔍 Debug Information",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/debug",
+          "host": ["{{base_url}}"],
+          "path": ["debug"]
+        },
+        "description": "Get debug information about environment and database binding"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Database binding working\", function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.hasDB).to.be.true;",
+              "    pm.expect(response.bindingWorking).to.eql(\"Yes\");",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔐 User Registration",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{$randomUserName}}\",\n  \"email\": \"{{$randomEmail}}\",\n  \"phone\": \"+919876543210\",\n  \"password\": \"securepass123\",\n  \"name\": \"Test User\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/signup",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "signup"]
+        },
+        "description": "Register a new user account"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"User created successfully\", function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.success).to.be.true;",
+              "    pm.expect(response.message).to.include(\"created successfully\");",
+              "});",
+              "",
+              "pm.test(\"User ID is returned\", function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.userId).to.be.a('number');",
+              "    pm.environment.set(\"user_id\", response.userId);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "🔐 User Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/login",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "login"]
+        },
+        "description": "Login with user credentials and get JWT token"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 200\", function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test(\"Login successful\", function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.success).to.be.true;",
+              "    pm.expect(response.message).to.include(\"Login successful\");",
+              "});",
+              "",
+              "pm.test(\"JWT token is returned\", function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.token).to.be.a('string');",
+              "    pm.expect(response.token).to.have.length.greaterThan(50);",
+              "    pm.environment.set(\"auth_token\", response.token);",
+              "});",
+              "",
+              "pm.test(\"User data is returned\", function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.user).to.be.an('object');",
+              "    pm.expect(response.user.id).to.be.a('number');",
+              "    pm.expect(response.user.username).to.be.a('string');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "❌ Error - Invalid Signup (Missing Fields)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/signup",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "signup"]
+        },
+        "description": "Test signup with missing required fields"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 400\", function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test(\"Error message for missing fields\", function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.success).to.be.false;",
+              "    pm.expect(response.error).to.include(\"required\");",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "❌ Error - Invalid Login (Wrong Password)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"testuser123\",\n  \"password\": \"wrongpassword\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/login",
+          "host": ["{{base_url}}"],
+          "path": ["auth", "login"]
+        },
+        "description": "Test login with incorrect password"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 401\", function () {",
+              "    pm.response.to.have.status(401);",
+              "});",
+              "",
+              "pm.test(\"Invalid credentials error\", function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.success).to.be.false;",
+              "    pm.expect(response.error).to.include(\"Invalid username or password\");",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "❌ Error - Non-existent Endpoint",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{base_url}}/non-existent",
+          "host": ["{{base_url}}"],
+          "path": ["non-existent"]
+        },
+        "description": "Test 404 error for non-existent endpoint"
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Status code is 404\", function () {",
+              "    pm.response.to.have.status(404);",
+              "});",
+              "",
+              "pm.test(\"Not found error message\", function () {",
+              "    const response = pm.response.json();",
+              "    pm.expect(response.success).to.be.false;",
+              "    pm.expect(response.error).to.include(\"not found\");",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
+---
+
+## ⚙️ Environment Setup
+
+### Create Environment Variables
+
+1. **Click** the gear icon (⚙️) in the top right
+2. **Click** "Add" to create new environment
+3. **Name it**: `SEBI Hackathon`
+4. **Add these variables**:
+
+| Variable | Initial Value | Current Value | Description |
+|----------|---------------|---------------|-------------|
+| `base_url` | `https://sebi-hackathon.bkumar-be23.workers.dev` | | API base URL |
+| `auth_token` | | | JWT token (auto-filled) |
+| `user_id` | | | User ID (auto-filled) |
+| `username` | `testuser123` | | Test username |
+| `password` | `securepass123` | | Test password |
+
+### Environment JSON Import
+
+```json
+{
+  "name": "SEBI Hackathon",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "https://sebi-hackathon.bkumar-be23.workers.dev",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "secret",
+      "enabled": true
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "username",
+      "value": "testuser123",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "password",
+      "value": "securepass123",
+      "type": "secret",
+      "enabled": true
+    }
+  ]
+}
+```
 
 ---
 
@@ -18,90 +449,77 @@ A comprehensive testing guide for the SEBI Hackathon Trading Platform API. This 
 
 ### 1. User Registration (Signup)
 
-**Endpoint:** `POST /auth/signup`
+**Request Details:**
+- **Method:** `POST`
+- **URL:** `{{base_url}}/auth/signup`
+- **Headers:** `Content-Type: application/json`
 
-**Request:**
-```bash
-curl -X POST https://sebi-hackathon.bkumar-be23.workers.dev/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "testuser123",
-    "email": "test@example.com",
-    "phone": "+919876543210",
-    "password": "securepass123",
-    "name": "Test User"
-  }'
-```
-
-**Expected Response (Success - 200):**
+**Body (raw JSON):**
 ```json
 {
-  "success": true,
-  "message": "User created successfully",
-  "userId": 1
+  "username": "{{$randomUserName}}",
+  "email": "{{$randomEmail}}",
+  "phone": "+919876543210",
+  "password": "securepass123",
+  "name": "Test User"
 }
 ```
 
-**Expected Response (Error - 400):**
-```json
-{
-  "success": false,
-  "error": "All fields are required"
-}
-```
+**Tests:**
+```javascript
+pm.test("Status code is 200", function () {
+    pm.response.to.have.status(200);
+});
 
-**Test Cases:**
-- ✅ Valid registration with all fields
-- ❌ Missing required fields
-- ❌ Duplicate username/email
-- ❌ Invalid email format
-- ❌ Invalid phone format
+pm.test("User created successfully", function () {
+    const response = pm.response.json();
+    pm.expect(response.success).to.be.true;
+    pm.expect(response.message).to.include("created successfully");
+});
+
+pm.test("User ID is returned", function () {
+    const response = pm.response.json();
+    pm.expect(response.userId).to.be.a('number');
+    pm.environment.set("user_id", response.userId);
+});
+```
 
 ---
 
 ### 2. User Login
 
-**Endpoint:** `POST /auth/login`
+**Request Details:**
+- **Method:** `POST`
+- **URL:** `{{base_url}}/auth/login`
+- **Headers:** `Content-Type: application/json`
 
-**Request:**
-```bash
-curl -X POST https://sebi-hackathon.bkumar-be23.workers.dev/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "testuser123",
-    "password": "securepass123"
-  }'
-```
-
-**Expected Response (Success - 200):**
+**Body (raw JSON):**
 ```json
 {
-  "success": true,
-  "message": "Login successful",
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {
-    "id": 1,
-    "username": "testuser123",
-    "email": "test@example.com",
-    "name": "Test User"
-  }
+  "username": "{{username}}",
+  "password": "{{password}}"
 }
 ```
 
-**Expected Response (Error - 401):**
-```json
-{
-  "success": false,
-  "error": "Invalid username or password"
-}
-```
+**Tests:**
+```javascript
+pm.test("Status code is 200", function () {
+    pm.response.to.have.status(200);
+});
 
-**Test Cases:**
-- ✅ Valid credentials
-- ❌ Invalid username
-- ❌ Invalid password
-- ❌ Missing credentials
-- ❌ Non-existent user
+pm.test("Login successful", function () {
+    const response = pm.response.json();
+    pm.expect(response.success).to.be.true;
+    pm.expect(response.message).to.include("Login successful");
+});
+
+pm.test("JWT token is returned", function () {
+    const response = pm.response.json();
+    pm.expect(response.token).to.be.a('string');
+    pm.expect(response.token).to.have.length.greaterThan(50);
+    pm.environment.set("auth_token", response.token);
+});
+```
 
 ---
 
@@ -109,311 +527,220 @@ curl -X POST https://sebi-hackathon.bkumar-be23.workers.dev/auth/login \
 
 ### 3. Database Connection Test
 
-**Endpoint:** `GET /test-db`
+**Request Details:**
+- **Method:** `GET`
+- **URL:** `{{base_url}}/test-db`
 
-**Request:**
-```bash
-curl -X GET https://sebi-hackathon.bkumar-be23.workers.dev/test-db
+**Tests:**
+```javascript
+pm.test("Status code is 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("Database connection successful", function () {
+    const response = pm.response.json();
+    pm.expect(response.success).to.be.true;
+    pm.expect(response.message).to.include("connected successfully");
+});
+
+pm.test("Users array exists", function () {
+    const response = pm.response.json();
+    pm.expect(response.users).to.be.an('array');
+});
 ```
-
-**Expected Response (Success - 200):**
-```json
-{
-  "success": true,
-  "message": "Database connected successfully!",
-  "totalUsers": 1,
-  "users": [
-    {
-      "id": 1,
-      "username": "testuser",
-      "email": "test@example.com",
-      "phone": "+919876543210",
-      "name": "Test User",
-      "created_at": "2024-08-30T19:38:45.726Z"
-    }
-  ]
-}
-```
-
-**Expected Response (Error - 500):**
-```json
-{
-  "success": false,
-  "error": "Database connection failed"
-}
-```
-
-**Test Cases:**
-- ✅ Database connection working
-- ✅ User data retrieval
-- ❌ Database connection failure
-
----
-
-### 4. Debug Information
-
-**Endpoint:** `GET /debug`
-
-**Request:**
-```bash
-curl -X GET https://sebi-hackathon.bkumar-be23.workers.dev/debug
-```
-
-**Expected Response (Success - 200):**
-```json
-{
-  "hasDB": true,
-  "dbType": "object",
-  "envKeys": ["sebi_trading_db"],
-  "bindingWorking": "Yes"
-}
-```
-
-**Test Cases:**
-- ✅ Environment variables loaded
-- ✅ Database binding working
-- ❌ Missing environment variables
 
 ---
 
 ## 🌐 Health Check
 
-### 5. API Health Status
+### 4. API Health Status
 
-**Endpoint:** `GET /`
+**Request Details:**
+- **Method:** `GET`
+- **URL:** `{{base_url}}/`
 
-**Request:**
-```bash
-curl -X GET https://sebi-hackathon.bkumar-be23.workers.dev/
+**Tests:**
+```javascript
+pm.test("Status code is 200", function () {
+    pm.response.to.have.status(200);
+});
+
+pm.test("API is healthy", function () {
+    const response = pm.response.json();
+    pm.expect(response.status).to.eql("healthy");
+});
+
+pm.test("Version is present", function () {
+    const response = pm.response.json();
+    pm.expect(response.version).to.be.a('string');
+});
 ```
-
-**Expected Response (Success - 200):**
-```json
-{
-  "message": "SEBI Hackathon Trading Platform API",
-  "status": "healthy",
-  "version": "1.0.0",
-  "timestamp": "2024-08-30T19:38:45.726Z",
-  "endpoints": {
-    "auth": {
-      "signup": "POST /auth/signup",
-      "login": "POST /auth/login"
-    },
-    "database": "GET /test-db"
-  }
-}
-```
-
-**Test Cases:**
-- ✅ API is running
-- ✅ Version information
-- ✅ Available endpoints listed
-- ✅ Timestamp accuracy
 
 ---
 
-## 🛠️ Testing Tools
+## 🔄 Test Automation
 
-### Using Postman
+### Running Collection Tests
 
-1. **Import Collection:**
-   ```json
-   {
-     "info": {
-       "name": "SEBI Hackathon API",
-       "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-     },
-     "item": [
-       {
-         "name": "Health Check",
-         "request": {
-           "method": "GET",
-           "url": "https://sebi-hackathon.bkumar-be23.workers.dev/"
-         }
-       },
-       {
-         "name": "User Signup",
-         "request": {
-           "method": "POST",
-           "url": "https://sebi-hackathon.bkumar-be23.workers.dev/auth/signup",
-           "header": [
-             {
-               "key": "Content-Type",
-               "value": "application/json"
-             }
-           ],
-           "body": {
-             "mode": "raw",
-             "raw": "{\n  \"username\": \"testuser123\",\n  \"email\": \"test@example.com\",\n  \"phone\": \"+919876543210\",\n  \"password\": \"securepass123\",\n  \"name\": \"Test User\"\n}"
-           }
-         }
-       },
-       {
-         "name": "User Login",
-         "request": {
-           "method": "POST",
-           "url": "https://sebi-hackathon.bkumar-be23.workers.dev/auth/login",
-           "header": [
-             {
-               "key": "Content-Type",
-               "value": "application/json"
-             }
-           ],
-           "body": {
-             "mode": "raw",
-             "raw": "{\n  \"username\": \"testuser123\",\n  \"password\": \"securepass123\"\n}"
-           }
-         }
-       },
-       {
-         "name": "Test Database",
-         "request": {
-           "method": "GET",
-           "url": "https://sebi-hackathon.bkumar-be23.workers.dev/test-db"
-         }
-       }
-     ]
-   }
-   ```
+1. **Open Collection** → Click on collection name
+2. **Click "Run Collection"** → Blue button in top right
+3. **Select Environment** → Choose "SEBI Hackathon"
+4. **Configure Run Settings:**
+   - **Iterations:** 1
+   - **Delay:** 1000ms (1 second between requests)
+   - **Log responses:** ✅ Checked
+   - **Save responses:** ✅ Checked
 
-### Using cURL Scripts
+### Newman CLI (Command Line)
 
-Create a test script `test-api.sh`:
-
+Install Newman:
 ```bash
-#!/bin/bash
+npm install -g newman
+```
 
-BASE_URL="https://sebi-hackathon.bkumar-be23.workers.dev"
+Run collection:
+```bash
+newman run "SEBI Hackathon Trading Platform API" \
+  --environment "SEBI Hackathon" \
+  --reporters cli,json \
+  --reporter-json-export results.json
+```
 
-echo "🧪 Testing SEBI Hackathon API"
-echo "================================"
+### GitHub Actions Integration
 
-# Health Check
-echo "1. Testing Health Check..."
-curl -s -X GET "$BASE_URL/" | jq '.'
+Create `.github/workflows/api-tests.yml`:
 
-# Database Test
-echo -e "\n2. Testing Database Connection..."
-curl -s -X GET "$BASE_URL/test-db" | jq '.'
-
-# User Signup
-echo -e "\n3. Testing User Signup..."
-curl -s -X POST "$BASE_URL/auth/signup" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "testuser123",
-    "email": "test@example.com",
-    "phone": "+919876543210",
-    "password": "securepass123",
-    "name": "Test User"
-  }' | jq '.'
-
-# User Login
-echo -e "\n4. Testing User Login..."
-curl -s -X POST "$BASE_URL/auth/login" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "testuser123",
-    "password": "securepass123"
-  }' | jq '.'
-
-echo -e "\n✅ API Testing Complete!"
+```yaml
+name: API Tests
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Newman
+        run: npm install -g newman
+      - name: Run API Tests
+        run: |
+          newman run "SEBI Hackathon Trading Platform API" \
+            --environment "SEBI Hackathon" \
+            --reporters cli,junit \
+            --reporter-junit-export results.xml
+      - name: Upload Test Results
+        uses: actions/upload-artifact@v2
+        with:
+          name: test-results
+          path: results.xml
 ```
 
 ---
 
 ## 📝 Test Scenarios
 
-### Scenario 1: Complete User Journey
+### Scenario 1: Happy Path Testing
 
 1. **Health Check** → Verify API is running
 2. **Database Test** → Verify database connectivity
 3. **User Signup** → Create new user account
-4. **User Login** → Authenticate user and get JWT token
-5. **Token Validation** → Use token for protected endpoints (future)
+4. **User Login** → Authenticate and get JWT token
 
 ### Scenario 2: Error Handling
 
-1. **Invalid Signup** → Test missing fields
-2. **Duplicate User** → Test existing username/email
-3. **Invalid Login** → Test wrong credentials
-4. **Database Error** → Test connection issues
+1. **Invalid Signup** → Test missing required fields
+2. **Invalid Login** → Test wrong credentials
+3. **Non-existent Endpoint** → Test 404 errors
 
-### Scenario 3: Security Testing
+### Scenario 3: Data Validation
 
-1. **Password Hashing** → Verify passwords are hashed
-2. **JWT Token** → Verify token structure and expiration
-3. **Input Validation** → Test SQL injection prevention
-4. **Rate Limiting** → Test API abuse prevention (future)
+1. **Email Format** → Test invalid email addresses
+2. **Phone Format** → Test invalid phone numbers
+3. **Password Strength** → Test weak passwords
 
 ---
 
 ## 🔍 Response Status Codes
 
-| Status Code | Description | Usage |
-|-------------|-------------|-------|
-| `200` | Success | Successful operations |
-| `400` | Bad Request | Invalid input data |
-| `401` | Unauthorized | Authentication required |
-| `404` | Not Found | Endpoint not found |
-| `500` | Internal Server Error | Server/database errors |
+| Status Code | Description | Postman Test |
+|-------------|-------------|--------------|
+| `200` | Success | `pm.response.to.have.status(200)` |
+| `400` | Bad Request | `pm.response.to.have.status(400)` |
+| `401` | Unauthorized | `pm.response.to.have.status(401)` |
+| `404` | Not Found | `pm.response.to.have.status(404)` |
+| `500` | Internal Server Error | `pm.response.to.have.status(500)` |
 
 ---
 
 ## 📊 Performance Testing
 
-### Load Testing with Apache Bench
+### Postman Monitor
 
-```bash
-# Test health endpoint
-ab -n 100 -c 10 https://sebi-hackathon.bkumar-be23.workers.dev/
+1. **Set up Monitor:**
+   - Collection → Three dots → "Monitor collection"
+   - **Name:** SEBI Hackathon API Monitor
+   - **Environment:** SEBI Hackathon
+   - **Frequency:** Every 5 minutes
+   - **Region:** Multiple regions
 
-# Test database endpoint
-ab -n 50 -c 5 https://sebi-hackathon.bkumar-be23.workers.dev/test-db
+2. **Monitor Alerts:**
+   - Response time > 200ms
+   - Error rate > 1%
+   - Failed tests
+
+### Load Testing with Postman
+
+```javascript
+// Pre-request Script for load testing
+pm.globals.set("iteration", pm.info.iteration);
+
+// Test Script for performance
+pm.test("Response time is acceptable", function () {
+    pm.expect(pm.response.responseTime).to.be.below(200);
+});
 ```
-
-### Expected Performance Metrics
-
-- **Response Time:** < 200ms
-- **Throughput:** > 1000 requests/second
-- **Error Rate:** < 1%
-- **Availability:** 99.9%
 
 ---
 
 ## 🚀 Quick Start Testing
 
-### 1. Test API Health
+### 1. Import Collection
+Copy the JSON collection above and import into Postman
+
+### 2. Set Up Environment
+Create environment with variables listed above
+
+### 3. Run Health Check
 ```bash
-curl https://sebi-hackathon.bkumar-be23.workers.dev/
+GET {{base_url}}/
 ```
 
-### 2. Test Database
+### 4. Test Database
 ```bash
-curl https://sebi-hackathon.bkumar-be23.workers.dev/test-db
+GET {{base_url}}/test-db
 ```
 
-### 3. Create Test User
+### 5. Create Test User
 ```bash
-curl -X POST https://sebi-hackathon.bkumar-be23.workers.dev/auth/signup \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "demo_user",
-    "email": "demo@example.com",
-    "phone": "+919876543210",
-    "password": "demo123",
-    "name": "Demo User"
-  }'
+POST {{base_url}}/auth/signup
+Content-Type: application/json
+
+{
+  "username": "demo_user",
+  "email": "demo@example.com",
+  "phone": "+919876543210",
+  "password": "demo123",
+  "name": "Demo User"
+}
 ```
 
-### 4. Login with Test User
+### 6. Login with Test User
 ```bash
-curl -X POST https://sebi-hackathon.bkumar-be23.workers.dev/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "username": "demo_user",
-    "password": "demo123"
-  }'
+POST {{base_url}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "demo_user",
+  "password": "demo123"
+}
 ```
 
 ---
@@ -422,6 +749,7 @@ curl -X POST https://sebi-hackathon.bkumar-be23.workers.dev/auth/login \
 
 - **API Documentation:** [GitHub Repository](https://github.com/Bhup-GitHUB/sebi-hackathon)
 - **Live API:** https://sebi-hackathon.bkumar-be23.workers.dev/
+- **Postman Collection:** Import the JSON above
 - **Team:** Yajat, Naman, Bhupesh, Simran, Akshat
 
 ---
@@ -437,5 +765,34 @@ curl -X POST https://sebi-hackathon.bkumar-be23.workers.dev/auth/login \
 
 ---
 
+## 🎯 Postman Pro Tips
+
+### 1. Pre-request Scripts
+```javascript
+// Generate random data
+pm.environment.set("random_username", "user_" + Math.random().toString(36).substr(2, 9));
+pm.environment.set("random_email", "test_" + Math.random().toString(36).substr(2, 9) + "@example.com");
+```
+
+### 2. Dynamic Variables
+- `{{$randomUserName}}` - Random username
+- `{{$randomEmail}}` - Random email
+- `{{$timestamp}}` - Current timestamp
+- `{{$guid}}` - Random GUID
+
+### 3. Test Chaining
+```javascript
+// Set token for next request
+if (pm.response.json().token) {
+    pm.environment.set("auth_token", pm.response.json().token);
+}
+```
+
+### 4. Data-Driven Testing
+Create a CSV file with test data and use Postman's data import feature for multiple test scenarios.
+
+---
+
 *Last Updated: August 30, 2024*
 *API Version: 1.0.0*
+*Postman Collection Version: 1.0.0*
