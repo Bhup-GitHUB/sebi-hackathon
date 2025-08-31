@@ -445,6 +445,111 @@ curl -X GET "https://sebi-hackathon.bkumar-be23.workers.dev/balance/transactions
 
 ---
 
+## 12. Buy Stock
+
+**POST /trading/buy**
+```bash
+curl -X POST https://sebi-hackathon.bkumar-be23.workers.dev/trading/buy \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "stockName": "RELIANCE",
+    "price": 2450.50,
+    "quantity": 10
+  }'
+```
+
+**Expected Success:**
+```json
+{
+  "success": true,
+  "message": "Stock purchase successful",
+  "order": {
+    "orderId": 1,
+    "stockName": "RELIANCE",
+    "orderType": "buy",
+    "quantity": 10,
+    "price": 2450.50,
+    "totalAmount": 24505.00,
+    "status": "executed",
+    "executedAt": "2025-08-30T20:30:15.456Z"
+  },
+  "balance": {
+    "previousBalance": 50000,
+    "amountSpent": 24505.00,
+    "newBalance": 25495.00,
+    "currency": "INR"
+  },
+  "portfolio": {
+    "stockName": "RELIANCE",
+    "quantity": 10,
+    "averagePrice": 2450.50,
+    "totalInvestment": 24505.00
+  }
+}
+```
+
+**Expected Error (Insufficient Balance):**
+```json
+{
+  "success": false,
+  "error": "Insufficient balance for this purchase",
+  "details": {
+    "requiredAmount": 24505.00,
+    "currentBalance": 1000,
+    "shortfall": 23505.00,
+    "stockName": "RELIANCE",
+    "price": 2450.50,
+    "quantity": 10
+  },
+  "alert": {
+    "type": "INSUFFICIENT_BALANCE",
+    "message": "You need ₹24505.00 to buy 10 shares of RELIANCE at ₹2450.50 each. Your current balance is ₹1000. Please recharge ₹23505.00."
+  }
+}
+```
+
+**Expected Error (Minimum Balance Violation):**
+```json
+{
+  "success": false,
+  "error": "Purchase would leave insufficient balance",
+  "details": {
+    "remainingBalance": 500,
+    "minimumRequired": 1000,
+    "shortfall": 500
+  },
+  "alert": {
+    "type": "MINIMUM_BALANCE_VIOLATION",
+    "message": "This purchase would leave you with ₹500, which is below the minimum required balance of ₹1000. Please recharge ₹500 more."
+  }
+}
+```
+
+**Expected Error (Invalid Input):**
+```json
+{
+  "success": false,
+  "error": "Valid stock name is required"
+}
+```
+
+```json
+{
+  "success": false,
+  "error": "Valid price is required (must be a positive number)"
+}
+```
+
+```json
+{
+  "success": false,
+  "error": "Valid quantity is required (must be a positive integer)"
+}
+```
+
+---
+
 ## 10. Database Test
 
 **GET /test-db**

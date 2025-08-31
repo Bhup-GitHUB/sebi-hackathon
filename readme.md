@@ -149,16 +149,42 @@ Response: {
 
 ### Trading Operations
 ```http
-POST /order/:userId
+POST /trading/buy
 Authorization: Bearer <token>
 Content-Type: application/json
 
 {
-  "type": "buy|sell",
-  "symbol": "RELIANCE",
-  "quantity": 10,
+  "stockName": "RELIANCE",
   "price": 2450.50,
-  "orderType": "market|limit"
+  "quantity": 10
+}
+```
+
+Response: {
+  "success": true,
+  "message": "Stock purchase successful",
+  "order": {
+    "orderId": 1,
+    "stockName": "RELIANCE",
+    "orderType": "buy",
+    "quantity": 10,
+    "price": 2450.50,
+    "totalAmount": 24505.00,
+    "status": "executed",
+    "executedAt": "2025-08-30T20:30:15.456Z"
+  },
+  "balance": {
+    "previousBalance": 50000,
+    "amountSpent": 24505.00,
+    "newBalance": 25495.00,
+    "currency": "INR"
+  },
+  "portfolio": {
+    "stockName": "RELIANCE",
+    "quantity": 10,
+    "averagePrice": 2450.50,
+    "totalInvestment": 24505.00
+  }
 }
 ```
 
