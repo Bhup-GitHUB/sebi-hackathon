@@ -279,8 +279,14 @@ curl -X GET https://sebi-hackathon.bkumar-be23.workers.dev/balance/check \
   "message": "Balance retrieved successfully",
   "balance": {
     "currentBalance": 1000,
+    "minimumRequired": 1000,
     "currency": "INR",
     "lastUpdated": "2025-08-30T20:20:15.456Z"
+  },
+  "alert": {
+    "isLowBalance": false,
+    "shortfall": 0,
+    "message": "Your balance is sufficient for trading."
   },
   "recentTransactions": [
     {
@@ -296,7 +302,55 @@ curl -X GET https://sebi-hackathon.bkumar-be23.workers.dev/balance/check \
 
 ---
 
-## 9. Transaction History
+## 9. Check Low Balance Alert
+
+**GET /balance/check-low-balance**
+```bash
+curl -X GET https://sebi-hackathon.bkumar-be23.workers.dev/balance/check-low-balance \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE"
+```
+
+**Expected Success (Low Balance):**
+```json
+{
+  "success": true,
+  "message": "Balance is low. Please recharge.",
+  "balance": {
+    "currentBalance": 500,
+    "minimumRequired": 1000,
+    "currency": "INR",
+    "lastUpdated": "2025-08-30T20:20:15.456Z"
+  },
+  "alert": {
+    "isLowBalance": true,
+    "shortfall": 500,
+    "message": "Your balance is ₹500. Minimum required is ₹1000. Please recharge ₹500 to meet the minimum requirement."
+  }
+}
+```
+
+**Expected Success (Sufficient Balance):**
+```json
+{
+  "success": true,
+  "message": "Balance is sufficient",
+  "balance": {
+    "currentBalance": 1500,
+    "minimumRequired": 1000,
+    "currency": "INR",
+    "lastUpdated": "2025-08-30T20:20:15.456Z"
+  },
+  "alert": {
+    "isLowBalance": false,
+    "shortfall": 0,
+    "message": "Your balance is sufficient for trading."
+  }
+}
+```
+
+---
+
+## 10. Transaction History
 
 **GET /balance/transactions**
 ```bash

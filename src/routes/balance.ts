@@ -7,6 +7,9 @@ type Bindings = {
 
 const balance = new Hono<{ Bindings: Bindings }>()
 
+// Minimum balance requirement
+const MINIMUM_BALANCE = 1000
+
 async function verifyToken(c: any) {
   const authHeader = c.req.header('Authorization')
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -55,7 +58,55 @@ async function getOrCreateBalance(db: D1Database, userId: string) {
   return balanceRecord
 }
 
+// Check if balance is low
+balance.get('/check-low-balance', async (c) => {
+  try {
+    const tokenResult = await verifyToken(c)
+    if (tokenResult && 'error' in tokenResult) {
+      return tokenResult
+    }
+    
+    const userId = tokenResult.sub
+    
+    // Get current balance
+    const balanceRecord = await getOrCreateBalance(c.env.sebi_trading_db, userId)
+    if (!balanceRecord) {
+      return c.json({
+        success: false,
+        error: 'Failed to get or create balance record'
+      }, 500)
+    }
+    
+    const currentAmount = safeParseAmount(balanceRecord.amount)
+    const isLowBalance = currentAmount < MINIMUM_BALANCE
+    const shortfall = isLowBalance ? MINIMUM_BALANCE - currentAmount : 0
+    
+    return c.json({
+      success: true,
+      message: isLowBalance ? 'Balance is low. Please recharge.' : 'Balance is sufficient',
+      balance: {
+        currentBalance: currentAmount,
+        minimumRequired: MINIMUM_BALANCE,
+        currency: 'INR',
+        lastUpdated: balanceRecord.updated_at || new Date().toISOString()
+      },
+      alert: {
+        isLowBalance: isLowBalance,
+        shortfall: shortfall,
+        message: isLowBalance ? `Your balance is ₹${currentAmount}. Minimum required is ₹${MINIMUM_BALANCE}. Please recharge ₹${shortfall} to meet the minimum requirement.` : 'Your balance is sufficient for trading.'
+      }
+    })
+    
+  } catch (error) {
+    console.error('Check low balance error:', error)
+    return c.json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Failed to check balance status'
+    }, 500)
+  }
+})
 
+// Add balance endpoint
 balance.post('/add', async (c) => {
   try {
     const tokenResult = await verifyToken(c)
@@ -66,7 +117,7 @@ balance.post('/add', async (c) => {
     const userId = tokenResult.sub
     const { addBalance } = await c.req.json()
     
-    
+    // Validate input
     if (!addBalance || typeof addBalance !== 'number' || addBalance <= 0) {
       return c.json({
         success: false,
@@ -74,7 +125,7 @@ balance.post('/add', async (c) => {
       }, 400)
     }
     
- 
+    // Get current balance
     const currentBalance = await getOrCreateBalance(c.env.sebi_trading_db, userId)
     if (!currentBalance) {
       return c.json({
@@ -86,23 +137,32 @@ balance.post('/add', async (c) => {
     const currentAmount = safeParseAmount(currentBalance.amount)
     const newBalance = currentAmount + addBalance
     
-    
+    // Update balance
     await c.env.sebi_trading_db.prepare(`
       UPDATE balance SET amount = ?, updated_at = ? WHERE user_id = ?
     `).bind(newBalance, new Date().toISOString(), userId).run()
     
-    
+    // Record transaction
     await c.env.sebi_trading_db.prepare(`
       INSERT INTO balance_transactions (user_id, type, amount, description)
       VALUES (?, ?, ?, ?)
     `).bind(userId, 'credit', addBalance, 'Balance added').run()
+    
+    // Check if balance is now sufficient
+    const isLowBalance = newBalance < MINIMUM_BALANCE
+    const shortfall = isLowBalance ? MINIMUM_BALANCE - newBalance : 0
     
     return c.json({
       success: true,
       message: 'Balance added successfully',
       previousBalance: currentAmount,
       addedAmount: addBalance,
-      newBalance: newBalance
+      newBalance: newBalance,
+      alert: {
+        isLowBalance: isLowBalance,
+        shortfall: shortfall,
+        message: isLowBalance ? `Balance updated to ₹${newBalance}. Minimum required is ₹${MINIMUM_BALANCE}. Please recharge ₹${shortfall} more to meet the minimum requirement.` : 'Balance is now sufficient for trading.'
+      }
     })
     
   } catch (error) {
@@ -114,7 +174,7 @@ balance.post('/add', async (c) => {
   }
 })
 
-
+// Check balance endpoint
 balance.get('/check', async (c) => {
   try {
     const tokenResult = await verifyToken(c)
@@ -124,7 +184,7 @@ balance.get('/check', async (c) => {
     
     const userId = tokenResult.sub
     
-    
+    // Get current balance
     const balanceRecord = await getOrCreateBalance(c.env.sebi_trading_db, userId)
     if (!balanceRecord) {
       return c.json({
@@ -134,8 +194,10 @@ balance.get('/check', async (c) => {
     }
     
     const currentAmount = safeParseAmount(balanceRecord.amount)
+    const isLowBalance = currentAmount < MINIMUM_BALANCE
+    const shortfall = isLowBalance ? MINIMUM_BALANCE - currentAmount : 0
     
-    
+    // Get recent transactions (last 10)
     const recentTransactions = await c.env.sebi_trading_db.prepare(`
       SELECT id, type, amount, description, created_at 
       FROM balance_transactions 
@@ -149,8 +211,14 @@ balance.get('/check', async (c) => {
       message: 'Balance retrieved successfully',
       balance: {
         currentBalance: currentAmount,
+        minimumRequired: MINIMUM_BALANCE,
         currency: 'INR',
         lastUpdated: balanceRecord.updated_at || new Date().toISOString()
+      },
+      alert: {
+        isLowBalance: isLowBalance,
+        shortfall: shortfall,
+        message: isLowBalance ? `Your balance is ₹${currentAmount}. Minimum required is ₹${MINIMUM_BALANCE}. Please recharge ₹${shortfall} to meet the minimum requirement.` : 'Your balance is sufficient for trading.'
       },
       recentTransactions: recentTransactions.results || []
     })
@@ -164,7 +232,7 @@ balance.get('/check', async (c) => {
   }
 })
 
-
+// Get transaction history
 balance.get('/transactions', async (c) => {
   try {
     const tokenResult = await verifyToken(c)
@@ -176,7 +244,7 @@ balance.get('/transactions', async (c) => {
     const limit = parseInt(c.req.query('limit') || '50')
     const offset = parseInt(c.req.query('offset') || '0')
     
-   
+    // Get transactions with pagination
     const transactions = await c.env.sebi_trading_db.prepare(`
       SELECT id, type, amount, description, created_at 
       FROM balance_transactions 
@@ -185,7 +253,7 @@ balance.get('/transactions', async (c) => {
       LIMIT ? OFFSET ?
     `).bind(userId, limit, offset).all()
     
-   
+    // Get total count
     const totalCount = await c.env.sebi_trading_db.prepare(`
       SELECT COUNT(*) as count FROM balance_transactions WHERE user_id = ?
     `).bind(userId).first()

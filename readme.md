@@ -199,10 +199,37 @@ Response: {
   "message": "Balance retrieved successfully",
   "balance": {
     "currentBalance": 1000,
+    "minimumRequired": 1000,
     "currency": "INR",
     "lastUpdated": "2025-08-30T20:20:15.456Z"
   },
+  "alert": {
+    "isLowBalance": false,
+    "shortfall": 0,
+    "message": "Your balance is sufficient for trading."
+  },
   "recentTransactions": [...]
+}
+```
+
+```http
+GET /balance/check-low-balance
+Authorization: Bearer <token>
+
+Response: {
+  "success": true,
+  "message": "Balance is low. Please recharge.",
+  "balance": {
+    "currentBalance": 500,
+    "minimumRequired": 1000,
+    "currency": "INR",
+    "lastUpdated": "2025-08-30T20:20:15.456Z"
+  },
+  "alert": {
+    "isLowBalance": true,
+    "shortfall": 500,
+    "message": "Your balance is ₹500. Minimum required is ₹1000. Please recharge ₹500 to meet the minimum requirement."
+  }
 }
 ```
 
