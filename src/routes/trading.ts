@@ -7,7 +7,7 @@ type Bindings = {
 
 const trading = new Hono<{ Bindings: Bindings }>()
 
-// Minimum balance requirement
+
 const MINIMUM_BALANCE = 1000
 
 async function verifyToken(c: any) {
@@ -32,7 +32,7 @@ async function verifyToken(c: any) {
   }
 }
 
-// Helper function to safely parse amount
+
 function safeParseAmount(amount: any): number {
   if (amount === null || amount === undefined) return 0
   const parsed = parseFloat(amount)
@@ -57,7 +57,7 @@ async function getOrCreateBalance(db: D1Database, userId: string) {
   return balanceRecord
 }
 
-// Buy stock endpoint
+
 trading.post('/buy', async (c) => {
   try {
     const tokenResult = await verifyToken(c)
@@ -68,7 +68,7 @@ trading.post('/buy', async (c) => {
     const userId = tokenResult.sub
     const { stockName, price, quantity } = await c.req.json()
 
-    // Validate input
+   
     if (!stockName || typeof stockName !== 'string' || stockName.trim() === '') {
       return c.json({
         success: false,
@@ -90,10 +90,9 @@ trading.post('/buy', async (c) => {
       }, 400)
     }
 
-    // Calculate total cost
+    
     const totalCost = price * quantity
 
-    // Check if user has sufficient balance
     const balanceRecord = await getOrCreateBalance(c.env.sebi_trading_db, userId)
     if (!balanceRecord) {
       return c.json({
@@ -124,7 +123,7 @@ trading.post('/buy', async (c) => {
       }, 400)
     }
 
-    // Check minimum balance requirement after purchase
+   
     const remainingBalance = currentBalance - totalCost
     if (remainingBalance < MINIMUM_BALANCE) {
       return c.json({
@@ -142,7 +141,7 @@ trading.post('/buy', async (c) => {
       }, 400)
     }
 
-    // Create orders table if it doesn't exist
+   
     await c.env.sebi_trading_db.prepare(`
       CREATE TABLE IF NOT EXISTS orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -159,7 +158,7 @@ trading.post('/buy', async (c) => {
       )
     `).run()
 
-    // Create portfolio table if it doesn't exist
+    
     await c.env.sebi_trading_db.prepare(`
       CREATE TABLE IF NOT EXISTS portfolio (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -175,30 +174,30 @@ trading.post('/buy', async (c) => {
       )
     `).run()
 
-    // Execute the buy order
+  
     const orderResult = await c.env.sebi_trading_db.prepare(`
       INSERT INTO orders (user_id, stock_name, order_type, quantity, price, total_amount, status, executed_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(userId, stockName.toUpperCase(), 'buy', quantity, price, totalCost, 'executed', new Date().toISOString()).run()
 
-    // Update user's balance
+   
     await c.env.sebi_trading_db.prepare(`
       UPDATE balance SET amount = ?, updated_at = ? WHERE user_id = ?
     `).bind(remainingBalance, new Date().toISOString(), userId).run()
 
-    // Record balance transaction
+    
     await c.env.sebi_trading_db.prepare(`
       INSERT INTO balance_transactions (user_id, type, amount, description)
       VALUES (?, ?, ?, ?)
     `).bind(userId, 'debit', totalCost, `Buy ${quantity} shares of ${stockName.toUpperCase()} at ₹${price}`).run()
 
-    // Update or create portfolio entry
+    
     const existingPortfolio = await c.env.sebi_trading_db.prepare(`
       SELECT * FROM portfolio WHERE user_id = ? AND stock_name = ?
     `).bind(userId, stockName.toUpperCase()).first()
 
     if (existingPortfolio) {
-      // Update existing portfolio entry
+    
       const newQuantity = Number(existingPortfolio.quantity) + quantity
       const newTotalInvestment = safeParseAmount(existingPortfolio.total_investment) + totalCost
       const newAveragePrice = newTotalInvestment / newQuantity
@@ -208,7 +207,7 @@ trading.post('/buy', async (c) => {
         WHERE user_id = ? AND stock_name = ?
       `).bind(newQuantity, newAveragePrice, newTotalInvestment, new Date().toISOString(), userId, stockName.toUpperCase()).run()
     } else {
-      // Create new portfolio entry
+    
       await c.env.sebi_trading_db.prepare(`
         INSERT INTO portfolio (user_id, stock_name, quantity, average_price, total_investment)
         VALUES (?, ?, ?, ?, ?)
@@ -285,7 +284,7 @@ trading.get('/portfolio', async (c) => {
       ORDER BY updated_at DESC
     `).bind(userId).all()
 
-    // Calculate portfolio summary
+  
     let totalInvestment = 0
     let totalStocks = 0
     const stocks = portfolio.results || []
@@ -323,7 +322,7 @@ trading.get('/portfolio', async (c) => {
   }
 })
 
-// Sell stock endpoint
+
 trading.post('/sell', async (c) => {
   try {
     const tokenResult = await verifyToken(c)
@@ -334,7 +333,7 @@ trading.post('/sell', async (c) => {
     const userId = tokenResult.sub
     const { stockName, price, quantity } = await c.req.json()
 
-    // Validate input
+    
     if (!stockName || typeof stockName !== 'string' || stockName.trim() === '') {
       return c.json({
         success: false,
@@ -356,7 +355,7 @@ trading.post('/sell', async (c) => {
       }, 400)
     }
 
-    // Check if user owns the stock
+    
     const portfolioEntry = await c.env.sebi_trading_db.prepare(`
       SELECT * FROM portfolio WHERE user_id = ? AND stock_name = ?
     `).bind(userId, stockName.toUpperCase()).first()
@@ -386,13 +385,13 @@ trading.post('/sell', async (c) => {
       }, 400)
     }
 
-    // Calculate sale proceeds
+   
     const saleProceeds = price * quantity
     const averagePrice = safeParseAmount(portfolioEntry.average_price)
     const profitLoss = (price - averagePrice) * quantity
     const profitLossPercentage = ((price - averagePrice) / averagePrice) * 100
 
-    // Get current balance
+    
     const balanceRecord = await getOrCreateBalance(c.env.sebi_trading_db, userId)
     if (!balanceRecord) {
       return c.json({
@@ -404,7 +403,7 @@ trading.post('/sell', async (c) => {
     const currentBalance = safeParseAmount(balanceRecord.amount)
     const newBalance = currentBalance + saleProceeds
 
-    // Create orders table if it doesn't exist
+    
     await c.env.sebi_trading_db.prepare(`
       CREATE TABLE IF NOT EXISTS orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -421,32 +420,32 @@ trading.post('/sell', async (c) => {
       )
     `).run()
 
-    // Execute the sell order
+   
     const orderResult = await c.env.sebi_trading_db.prepare(`
       INSERT INTO orders (user_id, stock_name, order_type, quantity, price, total_amount, status, executed_at)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(userId, stockName.toUpperCase(), 'sell', quantity, price, saleProceeds, 'executed', new Date().toISOString()).run()
 
-    // Update user's balance
+   
     await c.env.sebi_trading_db.prepare(`
       UPDATE balance SET amount = ?, updated_at = ? WHERE user_id = ?
     `).bind(newBalance, new Date().toISOString(), userId).run()
 
-    // Record balance transaction
+   
     await c.env.sebi_trading_db.prepare(`
       INSERT INTO balance_transactions (user_id, type, amount, description)
       VALUES (?, ?, ?, ?)
     `).bind(userId, 'credit', saleProceeds, `Sell ${quantity} shares of ${stockName.toUpperCase()} at ₹${price}`).run()
 
-    // Update portfolio
+   
     const remainingQuantity = ownedQuantity - quantity
     if (remainingQuantity === 0) {
-      // Remove portfolio entry if all shares sold
+      
       await c.env.sebi_trading_db.prepare(`
         DELETE FROM portfolio WHERE user_id = ? AND stock_name = ?
       `).bind(userId, stockName.toUpperCase()).run()
     } else {
-      // Update portfolio entry
+        
       const remainingInvestment = safeParseAmount(portfolioEntry.total_investment) * (remainingQuantity / ownedQuantity)
       await c.env.sebi_trading_db.prepare(`
         UPDATE portfolio SET quantity = ?, total_investment = ?, updated_at = ?
