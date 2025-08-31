@@ -30,7 +30,7 @@ async function verifyToken(c: any) {
   }
 }
 
-// Helper function to check if KYC exists for a user
+
 async function checkKycExists(db: D1Database, userId: string) {
   const existingKyc = await db.prepare(`
     SELECT id, pan, status, created_at, validated_at 
@@ -69,7 +69,7 @@ kyc.post('/register', async (c) => {
     }
     
     
-    // Check if KYC already exists for this user
+  
     const existingKyc = await checkKycExists(c.env.sebi_trading_db, userId)
     
     if (existingKyc) {

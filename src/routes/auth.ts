@@ -21,7 +21,7 @@ auth.post('/signup', async (c) => {
   try {
     const { username, email, phone, password, name } = await c.req.json()
     
-    // Validate required fields
+   
     if (!username || !email || !phone || !password || !name) {
       return c.json({
         success: false,
