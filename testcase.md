@@ -350,7 +350,63 @@ curl -X GET https://sebi-hackathon.bkumar-be23.workers.dev/balance/check-low-bal
 
 ---
 
-## 10. Transaction History
+## 10. Balance Alert (Frontend)
+
+**GET /balance/alert**
+```bash
+curl -X GET https://sebi-hackathon.bkumar-be23.workers.dev/balance/alert \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE"
+```
+
+**Expected Success (Low Balance Alert):**
+```json
+{
+  "success": true,
+  "hasAlert": true,
+  "alertType": "LOW_BALANCE",
+  "alert": {
+    "type": "LOW_BALANCE",
+    "severity": "WARNING",
+    "title": "Low Balance Alert",
+    "message": "Your balance is ₹500. Minimum required is ₹1000.",
+    "action": "Please recharge your account",
+    "shortfall": 500,
+    "requiredAmount": 1000,
+    "currentAmount": 500,
+    "actionButton": {
+      "text": "Recharge Now",
+      "amount": 500,
+      "url": "/recharge"
+    }
+  },
+  "balance": {
+    "currentBalance": 500,
+    "minimumRequired": 1000,
+    "currency": "INR",
+    "lastUpdated": "2025-08-30T20:20:15.456Z"
+  }
+}
+```
+
+**Expected Success (No Alert):**
+```json
+{
+  "success": true,
+  "hasAlert": false,
+  "alertType": "NONE",
+  "alert": null,
+  "balance": {
+    "currentBalance": 1500,
+    "minimumRequired": 1000,
+    "currency": "INR",
+    "lastUpdated": "2025-08-30T20:20:15.456Z"
+  }
+}
+```
+
+---
+
+## 11. Transaction History
 
 **GET /balance/transactions**
 ```bash

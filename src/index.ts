@@ -30,6 +30,7 @@ app.get('/', (c) => {
         add: 'POST /balance/add',
         check: 'GET /balance/check',
         checkLowBalance: 'GET /balance/check-low-balance',
+        alert: 'GET /balance/alert',
         transactions: 'GET /balance/transactions'
       },
       database: 'GET /test-db'

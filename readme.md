@@ -234,6 +234,38 @@ Response: {
 ```
 
 ```http
+GET /balance/alert
+Authorization: Bearer <token>
+
+Response: {
+  "success": true,
+  "hasAlert": true,
+  "alertType": "LOW_BALANCE",
+  "alert": {
+    "type": "LOW_BALANCE",
+    "severity": "WARNING",
+    "title": "Low Balance Alert",
+    "message": "Your balance is ₹500. Minimum required is ₹1000.",
+    "action": "Please recharge your account",
+    "shortfall": 500,
+    "requiredAmount": 1000,
+    "currentAmount": 500,
+    "actionButton": {
+      "text": "Recharge Now",
+      "amount": 500,
+      "url": "/recharge"
+    }
+  },
+  "balance": {
+    "currentBalance": 500,
+    "minimumRequired": 1000,
+    "currency": "INR",
+    "lastUpdated": "2025-08-30T20:20:15.456Z"
+  }
+}
+```
+
+```http
 GET /balance/transactions
 Authorization: Bearer <token>
 
