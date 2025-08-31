@@ -160,7 +160,28 @@ Content-Type: application/json
 }
 ```
 
-Response: {
+```http
+POST /trading/sell
+Authorization: Bearer <token>
+Content-Type: application/json
+
+{
+  "stockName": "RELIANCE",
+  "price": 2500.00,
+  "quantity": 5
+}
+```
+
+```http
+GET /trading/portfolio
+Authorization: Bearer <token>
+```
+
+Response Examples:
+
+**Buy Success:**
+```json
+{
   "success": true,
   "message": "Stock purchase successful",
   "order": {
@@ -184,6 +205,64 @@ Response: {
     "quantity": 10,
     "averagePrice": 2450.50,
     "totalInvestment": 24505.00
+  }
+}
+```
+
+**Sell Success:**
+```json
+{
+  "success": true,
+  "message": "Stock sale successful",
+  "order": {
+    "orderId": 2,
+    "stockName": "RELIANCE",
+    "orderType": "sell",
+    "quantity": 5,
+    "price": 2500.00,
+    "totalAmount": 12500.00,
+    "status": "executed",
+    "executedAt": "2025-08-30T23:30:15.456Z"
+  },
+  "balance": {
+    "previousBalance": 25495.00,
+    "amountReceived": 12500.00,
+    "newBalance": 37995.00,
+    "currency": "INR"
+  },
+  "profitLoss": {
+    "amount": 247.50,
+    "percentage": 2.02,
+    "type": "profit"
+  },
+  "portfolio": {
+    "stockName": "RELIANCE",
+    "remainingQuantity": 5,
+    "averagePrice": 2450.50
+  }
+}
+```
+
+**Portfolio:**
+```json
+{
+  "success": true,
+  "message": "Portfolio retrieved successfully",
+  "portfolio": {
+    "totalStocks": 25,
+    "totalInvestment": 50000.00,
+    "numberOfHoldings": 3,
+    "stocks": [
+      {
+        "stockName": "RELIANCE",
+        "quantity": 10,
+        "averagePrice": 2450.50,
+        "totalInvestment": 24505.00,
+        "currentValue": 24505.00,
+        "createdAt": "2025-08-30T20:30:15.456Z",
+        "updatedAt": "2025-08-30T20:30:15.456Z"
+      }
+    ]
   }
 }
 ```

@@ -33,7 +33,9 @@ app.get('/', (c) => {
         transactions: 'GET /balance/transactions'
       },
       trading: {
-        buy: 'POST /trading/buy'
+        buy: 'POST /trading/buy',
+        sell: 'POST /trading/sell',
+        portfolio: 'GET /trading/portfolio'
       }
     }
   })

@@ -550,6 +550,173 @@ curl -X POST https://sebi-hackathon.bkumar-be23.workers.dev/trading/buy \
 
 ---
 
+## 13. Portfolio
+
+**GET /trading/portfolio**
+```bash
+curl -X GET https://sebi-hackathon.bkumar-be23.workers.dev/trading/portfolio \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE"
+```
+
+**Expected Success:**
+```json
+{
+  "success": true,
+  "message": "Portfolio retrieved successfully",
+  "portfolio": {
+    "totalStocks": 25,
+    "totalInvestment": 50000.00,
+    "numberOfHoldings": 3,
+    "stocks": [
+      {
+        "stockName": "RELIANCE",
+        "quantity": 10,
+        "averagePrice": 2450.50,
+        "totalInvestment": 24505.00,
+        "currentValue": 24505.00,
+        "createdAt": "2025-08-30T20:30:15.456Z",
+        "updatedAt": "2025-08-30T20:30:15.456Z"
+      },
+      {
+        "stockName": "TCS",
+        "quantity": 5,
+        "averagePrice": 3500.00,
+        "totalInvestment": 17500.00,
+        "currentValue": 17500.00,
+        "createdAt": "2025-08-30T21:15:30.123Z",
+        "updatedAt": "2025-08-30T21:15:30.123Z"
+      },
+      {
+        "stockName": "INFOSYS",
+        "quantity": 10,
+        "averagePrice": 800.00,
+        "totalInvestment": 8000.00,
+        "currentValue": 8000.00,
+        "createdAt": "2025-08-30T22:00:45.789Z",
+        "updatedAt": "2025-08-30T22:00:45.789Z"
+      }
+    ]
+  }
+}
+```
+
+---
+
+## 14. Sell Stock
+
+**POST /trading/sell**
+```bash
+curl -X POST https://sebi-hackathon.bkumar-be23.workers.dev/trading/sell \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "stockName": "RELIANCE",
+    "price": 2500.00,
+    "quantity": 5
+  }'
+```
+
+**Expected Success:**
+```json
+{
+  "success": true,
+  "message": "Stock sale successful",
+  "order": {
+    "orderId": 2,
+    "stockName": "RELIANCE",
+    "orderType": "sell",
+    "quantity": 5,
+    "price": 2500.00,
+    "totalAmount": 12500.00,
+    "status": "executed",
+    "executedAt": "2025-08-30T23:30:15.456Z"
+  },
+  "balance": {
+    "previousBalance": 25495.00,
+    "amountReceived": 12500.00,
+    "newBalance": 37995.00,
+    "currency": "INR"
+  },
+  "profitLoss": {
+    "amount": 247.50,
+    "percentage": 2.02,
+    "type": "profit"
+  },
+  "portfolio": {
+    "stockName": "RELIANCE",
+    "remainingQuantity": 5,
+    "averagePrice": 2450.50
+  }
+}
+```
+
+**Expected Error (No Shares Owned):**
+```json
+{
+  "success": false,
+  "error": "You do not own any shares of this stock",
+  "details": {
+    "stockName": "AAPL",
+    "requestedQuantity": 5
+  }
+}
+```
+
+**Expected Error (Insufficient Shares):**
+```json
+{
+  "success": false,
+  "error": "Insufficient shares to sell",
+  "details": {
+    "stockName": "RELIANCE",
+    "ownedQuantity": 10,
+    "requestedQuantity": 15,
+    "shortfall": 5
+  }
+}
+```
+
+---
+
+## 15. Transaction History
+
+**GET /balance/transactions**
+```bash
+curl -X GET https://sebi-hackathon.bkumar-be23.workers.dev/balance/transactions \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE"
+```
+
+**Expected Success:**
+```json
+{
+  "success": true,
+  "message": "Transaction history retrieved successfully",
+  "transactions": [
+    {
+      "id": 1,
+      "type": "credit",
+      "amount": 1000,
+      "description": "Balance added",
+      "created_at": "2025-08-30T20:20:15.456Z"
+    }
+  ],
+  "pagination": {
+    "limit": 50,
+    "offset": 0,
+    "total": 1,
+    "hasMore": false
+  }
+}
+```
+
+**With Pagination:**
+```bash
+curl -X GET "https://sebi-hackathon.bkumar-be23.workers.dev/balance/transactions?limit=10&offset=0" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE"
+```
+
+---
+
 ## 10. Database Test
 
 **GET /test-db**
