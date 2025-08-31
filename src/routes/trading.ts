@@ -306,7 +306,7 @@ trading.get('/portfolio', async (c) => {
           quantity: stock.quantity,
           averagePrice: safeParseAmount(stock.average_price),
           totalInvestment: safeParseAmount(stock.total_investment),
-          currentValue: safeParseAmount(stock.average_price) * stock.quantity, // Assuming current price = average price for now
+          currentValue: safeParseAmount(stock.average_price) * stock.quantity, 
           createdAt: stock.created_at,
           updatedAt: stock.updated_at
         }))
@@ -445,7 +445,7 @@ trading.post('/sell', async (c) => {
         DELETE FROM portfolio WHERE user_id = ? AND stock_name = ?
       `).bind(userId, stockName.toUpperCase()).run()
     } else {
-        
+
       const remainingInvestment = safeParseAmount(portfolioEntry.total_investment) * (remainingQuantity / ownedQuantity)
       await c.env.sebi_trading_db.prepare(`
         UPDATE portfolio SET quantity = ?, total_investment = ?, updated_at = ?

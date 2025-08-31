@@ -7,7 +7,7 @@ type Bindings = {
 
 const balance = new Hono<{ Bindings: Bindings }>()
 
-// Minimum balance requirement
+
 const MINIMUM_BALANCE = 1000
 
 async function verifyToken(c: any) {
