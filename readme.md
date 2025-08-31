@@ -30,6 +30,8 @@ sebi-hackathon/
 ├── src/
 │   ├── routes/
 │   │   ├── auth.ts
+│   │   ├── kyc.ts
+│   │   ├── balance.ts
 │   │   ├── user.ts
 │   │   ├── trading.ts
 │   │   └── reports.ts
@@ -179,24 +181,45 @@ Response: {
 
 ### Balance Management
 ```http
-GET /balance/:userId
-Authorization: Bearer <token>
-
-Response: {
-  "availableBalance": 50000,
-  "margin": 15000,
-  "credit": 35000
-}
-```
-
-```http
-POST /balance/:userId/add
+POST /balance/add
 Authorization: Bearer <token>
 Content-Type: application/json
 
 {
-  "amount": 10000,
-  "method": "upi|bank_transfer"
+  "addBalance": 1000
+}
+```
+
+```http
+GET /balance/check
+Authorization: Bearer <token>
+
+Response: {
+  "success": true,
+  "message": "Balance retrieved successfully",
+  "balance": {
+    "currentBalance": 1000,
+    "currency": "INR",
+    "lastUpdated": "2025-08-30T20:20:15.456Z"
+  },
+  "recentTransactions": [...]
+}
+```
+
+```http
+GET /balance/transactions
+Authorization: Bearer <token>
+
+Response: {
+  "success": true,
+  "message": "Transaction history retrieved successfully",
+  "transactions": [...],
+  "pagination": {
+    "limit": 50,
+    "offset": 0,
+    "total": 1,
+    "hasMore": false
+  }
 }
 ```
 

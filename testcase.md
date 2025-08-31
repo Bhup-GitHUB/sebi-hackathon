@@ -28,6 +28,11 @@ curl -X GET https://sebi-hackathon.bkumar-be23.workers.dev/
       "validate": "POST /kyc/validate",
       "status": "GET /kyc/status"
     },
+    "balance": {
+      "add": "POST /balance/add",
+      "check": "GET /balance/check",
+      "transactions": "GET /balance/transactions"
+    },
     "database": "GET /test-db"
   }
 }
@@ -225,7 +230,112 @@ curl -X GET https://sebi-hackathon.bkumar-be23.workers.dev/kyc/status \
 
 ---
 
-## 7. Database Test
+## 7. Add Balance
+
+**POST /balance/add**
+```bash
+curl -X POST https://sebi-hackathon.bkumar-be23.workers.dev/balance/add \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE" \
+  -d '{
+    "addBalance": 1000
+  }'
+```
+
+**Expected Success:**
+```json
+{
+  "success": true,
+  "message": "Balance added successfully",
+  "previousBalance": 0,
+  "addedAmount": 1000,
+  "newBalance": 1000,
+  "transactionId": 1
+}
+```
+
+**Expected Error (Invalid Amount):**
+```json
+{
+  "success": false,
+  "error": "Valid balance amount is required (must be a positive number)"
+}
+```
+
+---
+
+## 8. Check Balance
+
+**GET /balance/check**
+```bash
+curl -X GET https://sebi-hackathon.bkumar-be23.workers.dev/balance/check \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE"
+```
+
+**Expected Success:**
+```json
+{
+  "success": true,
+  "message": "Balance retrieved successfully",
+  "balance": {
+    "currentBalance": 1000,
+    "currency": "INR",
+    "lastUpdated": "2025-08-30T20:20:15.456Z"
+  },
+  "recentTransactions": [
+    {
+      "id": 1,
+      "type": "credit",
+      "amount": 1000,
+      "description": "Balance added",
+      "created_at": "2025-08-30T20:20:15.456Z"
+    }
+  ]
+}
+```
+
+---
+
+## 9. Transaction History
+
+**GET /balance/transactions**
+```bash
+curl -X GET https://sebi-hackathon.bkumar-be23.workers.dev/balance/transactions \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE"
+```
+
+**Expected Success:**
+```json
+{
+  "success": true,
+  "message": "Transaction history retrieved successfully",
+  "transactions": [
+    {
+      "id": 1,
+      "type": "credit",
+      "amount": 1000,
+      "description": "Balance added",
+      "created_at": "2025-08-30T20:20:15.456Z"
+    }
+  ],
+  "pagination": {
+    "limit": 50,
+    "offset": 0,
+    "total": 1,
+    "hasMore": false
+  }
+}
+```
+
+**With Pagination:**
+```bash
+curl -X GET "https://sebi-hackathon.bkumar-be23.workers.dev/balance/transactions?limit=10&offset=0" \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN_HERE"
+```
+
+---
+
+## 10. Database Test
 
 **GET /test-db**
 ```bash
@@ -261,6 +371,9 @@ curl -X GET https://sebi-hackathon.bkumar-be23.workers.dev/test-db
 3. **Register KYC:** `POST /kyc/register` (use token)
 4. **Validate KYC:** `POST /kyc/validate` (use token)
 5. **Check Status:** `GET /kyc/status` (use token)
+6. **Add Balance:** `POST /balance/add` (use token)
+7. **Check Balance:** `GET /balance/check` (use token)
+8. **View Transactions:** `GET /balance/transactions` (use token)
 
 ---
 
@@ -278,7 +391,7 @@ curl -X GET https://sebi-hackathon.bkumar-be23.workers.dev/test-db
 ```json
 {
   "success": false,
-  "error": "PAN is required"
+  "error": "Valid balance amount is required (must be a positive number)"
 }
 ```
 
