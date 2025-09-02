@@ -1,4 +1,5 @@
 import { Hono } from 'hono'
+import { cors } from 'hono/cors'
 import auth from './routes/auth'
 import kyc from './routes/kyc'
 import balance from './routes/balance'
@@ -9,6 +10,16 @@ type Bindings = {
 }
 
 const app = new Hono<{ Bindings: Bindings }>()
+
+
+app.use('/*', cors({
+  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://localhost:5173', 'https://yourdomain.com'],
+  allowHeaders: ['Content-Type', 'Authorization'],
+  allowMethods: ['POST', 'GET', 'PUT', 'DELETE', 'OPTIONS'],
+  exposeHeaders: ['Content-Length', 'X-Kuma-Revision'],
+  maxAge: 600,
+  credentials: true,
+}))
 
 app.get('/', (c) => {
   return c.json({
